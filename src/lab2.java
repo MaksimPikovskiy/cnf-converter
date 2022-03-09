@@ -6,12 +6,19 @@ import java.util.*;
 
 public class lab2 {
 
-    public static void usage() {
+    private static void debug(String str) {
+        System.out.println(str + "\n\n");
+    }
+
+    private static void usage() {
         System.err.println("Program should accept 1 argument, cnf-file." +
                 "\n Example: $ java lab2.java testcases/functions/f1.cnf");
     }
 
     public static void main(String[] args) {
+
+        boolean enableDebug = true;
+
         if(args.length != 1) {
             System.err.println("Error: Incorrect number of arguments");
             usage();
@@ -26,6 +33,11 @@ public class lab2 {
             List<String> clauses = new LinkedList<>();
             while(reader.hasNextLine()) {
                 clauses.add(reader.nextLine());
+            }
+
+            if(enableDebug) {
+                String debugStr = predicates + "\n" + variables + "\n" + constants + "\n" + functions + "\n" + clauses;
+                debug(debugStr);
             }
 
             List<String> predicatesList = new LinkedList<>(Arrays.asList(predicates.split(" ")));
@@ -45,10 +57,10 @@ public class lab2 {
             kb.addFunctions(functionsList);
             kb.addClauses(clauses);
 
-            System.out.println(kb);
 
-            System.out.println(clauses);
-
+            if(enableDebug) {
+                debug(kb.toString());
+            }
 
         } catch (FileNotFoundException e) {
             System.err.println("File not Found!\n" + e.getMessage());

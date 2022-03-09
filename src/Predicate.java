@@ -15,6 +15,7 @@ public class Predicate {
         int termStart = pred.indexOf("(");
 
         predicate = pred.substring(0, termStart);
+        // check whether terms contain function.
         terms = Arrays.asList((pred.substring(termStart + 1, pred.length() - 1)).split(", "));
     }
 

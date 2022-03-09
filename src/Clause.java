@@ -20,12 +20,10 @@ public class Clause {
                 positivePredicates.add(predicate);
             }
         }
-        System.out.println(positivePredicates.size());
-        System.out.println(negativePredicates.size());
     }
 
     public String toString() {
-        StringJoiner str = new StringJoiner(", ");
+        StringJoiner str = new StringJoiner(" ");
         for(Predicate predicate : positivePredicates) {
             str.add(predicate.toString());
         }

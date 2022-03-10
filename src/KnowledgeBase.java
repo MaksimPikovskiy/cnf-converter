@@ -34,7 +34,7 @@ public class KnowledgeBase {
 
     public void addClauses(List<String> newClauses) {
         for (String temp : newClauses) {
-            Clause clause = new Clause(temp);
+            Clause clause = new Clause(temp, this);
             clauses.add(clause);
         }
     }
@@ -59,6 +59,7 @@ public class KnowledgeBase {
         return clauses;
     }
 
+    @Override
     public String toString() {
         return "Knowledge Base:" +
                 "\nPredicates: " + predicates +

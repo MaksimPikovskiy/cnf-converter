@@ -1,13 +1,18 @@
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public class Predicate {
+    private KnowledgeBase kb;
+
     private boolean isNegated;
     private String predicate;
     private List<Term> terms;
 
-    public Predicate(String pred) {
+    public Predicate(String pred, KnowledgeBase ownKB) {
+        kb = ownKB;
+
         isNegated = (pred.charAt(0) == '!');
 
         if(isNegated)
@@ -37,14 +42,21 @@ public class Predicate {
         return isNegated;
     }
 
-    public boolean equals(Object that, KnowledgeBase kb) {
+    @Override
+    public int hashCode() {
+        return Objects.hash(isNegated, predicate, terms);
+    }
+
+    @Override
+    public boolean equals(Object that) {
         if(this == that) return true;
         if(that == null) return false;
         if (this.getClass() != that.getClass()) return false;
 
         Predicate thatPred = (Predicate) that;
         boolean flag = predicate.equals(thatPred.getPredicate())
-                && terms.size() == thatPred.getTerms().size();
+                && terms.size() == thatPred.getTerms().size()
+                && this.isNegated() == thatPred.isNegated();
 
         if(!flag)
             return false;
@@ -64,6 +76,30 @@ public class Predicate {
         return true;
     }
 
+    public boolean BothCreateTautology(Predicate that) {
+        boolean flag = predicate.equals(that.getPredicate())
+                && terms.size() == that.getTerms().size()
+                && ((this.isNegated() && !that.isNegated()) || (!this.isNegated() && that.isNegated()));
+
+        if(!flag)
+            return false;
+
+        for(int i = 0; i < terms.size(); i++) {
+            Term term1 = terms.get(i);
+            Term term2 = that.getTerms().get(i);
+
+            if((term1.isConstant(kb) && term2.isConstant(kb) && !term1.equals(term2)) ||
+                    (term1.isConstant(kb) && term2.isFunction(kb)) ||
+                    (term1.isFunction(kb) && term2.isConstant(kb)) ||
+                    (term1.isVariable(kb) && term2.isFunction(kb) && term2.getFuncTerms().contains(term1)) ||
+                    (!term1.equalsFunction(term2))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
     public String toString() {
         StringJoiner str = new StringJoiner(", ");
         for(Term temp : terms) {

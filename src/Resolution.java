@@ -24,29 +24,18 @@ public class Resolution {
                     resolvents.addAll(resolve(clause_i, clause_j));
                     resolvents.addAll(resolve(clause_j, clause_i));
 
-                    System.out.println(resolvents);
-                    //System.out.println("\n1 " + Clause.EMPTY.isEmpty());
                     for(Clause resolvent : resolvents) {
-                        //System.out.println("2 " + resolvent.isEmpty());
-                        //System.out.println("3 " + resolvent.equals(Clause.EMPTY, kb));
-                        if(resolvent.equals(Clause.EMPTY, kb)) {
+                        if(resolvent.equals(Clause.EMPTY)) {
                             return "no";
                         }
                     }
-                    System.out.println("LOOP");
+
                     newClauses.addAll(resolvents);
                 }
             }
 
-            System.out.println("->" + clauses);
-            System.out.println("->" + newClauses);
-
-            for(Clause clause : clauses) {
-                for(Clause newClause : newClauses) {
-                    if(clause.equals(newClause, kb)) {
-                        return "yes";
-                    }
-                }
+            if (clauses.containsAll(newClauses)) {
+                return "yes";
             }
 
             clauses.addAll(newClauses);
@@ -58,24 +47,24 @@ public class Resolution {
 
         Set<Predicate> complementarySet = new LinkedHashSet<>(clause_i.getPositivePredicates());
         complementarySet.addAll(clause_j.getNegativePredicates());
+
         for(Predicate complement : complementarySet) {
             List<Predicate> resolventLiterals = new LinkedList<>();
 
-
             for(Predicate ciPred : clause_i.getNegativePredicates()) {
-                if(!ciPred.equals(complement, kb)) {
+                if(ciPred.isNegated() || !ciPred.equals(complement)) {
                     resolventLiterals.add(ciPred);
                 }
             }
 
             for(Predicate cjPred : clause_j.getPositivePredicates()) {
-                if(!cjPred.equals(complement, kb)) {
+                if(!cjPred.isNegated() || !cjPred.equals(complement)) {
                     resolventLiterals.add(cjPred);
                 }
             }
 
-            Clause resolvent = new Clause(resolventLiterals);
-            if(!resolvent.isTautology(kb)) {
+            Clause resolvent = new Clause(resolventLiterals, kb);
+            if(!resolvent.isTautology()) {
                 resolvents.add(resolvent);
             }
         }
@@ -84,6 +73,6 @@ public class Resolution {
     }
 
     private void discardTautologies(Set<Clause> clauses) {
-        clauses.removeIf(n -> (n.isTautology(kb)));
+        clauses.removeIf(Clause::isTautology);
     }
 }

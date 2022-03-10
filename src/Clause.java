@@ -1,22 +1,27 @@
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public class Clause {
     public static final Clause EMPTY = new Clause();
 
+    private KnowledgeBase kb;
+
     private List<Predicate> predicates;
     private List<Predicate> positivePredicates;
     private List<Predicate> negativePredicates;
 
-    public Clause(String clause) {
+    public Clause(String clause, KnowledgeBase ownKB) {
+        kb = ownKB;
+
         predicates = new LinkedList<>();
         positivePredicates = new LinkedList<>();
         negativePredicates = new LinkedList<>();
 
         String[] given_predicates = clause.split(" ");
         for(String temp : given_predicates) {
-            Predicate predicate = new Predicate(temp);
+            Predicate predicate = new Predicate(temp, kb);
             predicates.add(predicate);
             if(predicate.isNegated()) {
                 negativePredicates.add(predicate);
@@ -27,7 +32,9 @@ public class Clause {
         }
     }
 
-    public Clause(List<Predicate> new_pred) {
+    public Clause(List<Predicate> new_pred, KnowledgeBase ownKB) {
+        kb = ownKB;
+
         predicates = new LinkedList<>(new_pred);
         positivePredicates = new LinkedList<>();
         negativePredicates = new LinkedList<>();
@@ -43,18 +50,16 @@ public class Clause {
     }
 
     public Clause() {
-        this(new LinkedList<Predicate>());
+        this(new LinkedList<Predicate>(), new KnowledgeBase());
     }
 
-    public boolean isTautology(KnowledgeBase kb) {
+    public boolean isTautology() {
         if(predicates.size() == 2) {
             for(int i = 0; i < predicates.size() - 1; i++) {
                 Predicate pred_i = predicates.get(i);
                 for(int j = i + 1; j < predicates.size(); j++) {
                     Predicate pred_j = predicates.get(j);
-                    if(pred_i.equals(pred_j, kb) &&
-                            ((pred_i.isNegated() && !pred_j.isNegated()) ||
-                                    (!pred_i.isNegated() && pred_j.isNegated()))) {
+                    if(!pred_i.equals(pred_j) && pred_i.BothCreateTautology(pred_j)) {
                         return true;
                     }
                 }
@@ -75,26 +80,26 @@ public class Clause {
         return negativePredicates;
     }
 
-    public boolean equals(Object that, KnowledgeBase kb) {
+    @Override
+    public int hashCode() {
+        return Objects.hash(predicates, positivePredicates, negativePredicates);
+    }
+
+    @Override
+    public boolean equals(Object that) {
         if(this == that) return true;
         if(that == null) return false;
         if (this.getClass() != that.getClass()) return false;
 
         Clause thatClause = (Clause) that;
-        if(!this.isEmpty() && thatClause.isEmpty())
+        if((!this.isEmpty() && thatClause.isEmpty()) || (this.isEmpty() && !thatClause.isEmpty())) {
             return false;
-        for (Predicate thisPred : predicates) {
-            for (Predicate thatPred : thatClause.getPredicates()) {
-                if (!(thatPred.equals(thisPred, kb) && (thisPred.isNegated() == thatPred.isNegated()))) {
-                    return false;
-                }
-            }
         }
-        return true;
+        return predicates.containsAll(thatClause.getPredicates());
     }
 
     public boolean isEmpty() {
-        return predicates.isEmpty() && negativePredicates.isEmpty() && positivePredicates.isEmpty();
+        return predicates.isEmpty();
     }
 
     public String toString() {

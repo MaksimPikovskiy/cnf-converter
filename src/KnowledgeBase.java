@@ -16,55 +16,27 @@ public class KnowledgeBase {
         clauses = new ArrayList<>();
     }
 
-    public void addPredicate(String predicate) {
-        predicates.add(predicate);
-    }
-
     public void addPredicates(List<String> newPred) {
         predicates.addAll(newPred);
-    }
-
-    public void addConstant(String constant) {
-        constants.add(constant);
     }
 
     public void addConstants(List<String> newConst) {
         constants.addAll(newConst);
     }
 
-    public void addFunction(String function) {
-        functions.add(function);
-    }
-
     public void addFunctions(List<String> newFunc) {
         functions.addAll(newFunc);
-    }
-
-    public void addVariable(String variable) {
-        variables.add(variable);
     }
 
     public void addVariables(List<String> newVar) {
         variables.addAll(newVar);
     }
 
-    public void addClause(String newClause) {
-        Clause clause = new Clause(newClause);
-        clauses.add(clause);
-    }
-
     public void addClauses(List<String> newClauses) {
-        for (String temp : newClauses)
-            addClause(temp);
-    }
-
-    public String toString() {
-        return "Knowledge Base:" +
-                "\nPredicates: " + predicates +
-                "\nVariables: " + variables +
-                "\nConstants: " + constants +
-                "\nFunctions: " + functions +
-                "\nClauses: " + clauses;
+        for (String temp : newClauses) {
+            Clause clause = new Clause(temp);
+            clauses.add(clause);
+        }
     }
 
     public boolean isPredicateOfKB(String predicate) {
@@ -81,6 +53,19 @@ public class KnowledgeBase {
 
     public boolean isFunctionOfKB(String function) {
         return functions.contains(function);
+    }
+
+    public List<Clause> getClauses() {
+        return clauses;
+    }
+
+    public String toString() {
+        return "Knowledge Base:" +
+                "\nPredicates: " + predicates +
+                "\nVariables: " + variables +
+                "\nConstants: " + constants +
+                "\nFunctions: " + functions +
+                "\nClauses: " + clauses;
     }
 
 }

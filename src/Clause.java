@@ -3,23 +3,98 @@ import java.util.List;
 import java.util.StringJoiner;
 
 public class Clause {
-    List<Predicate> positivePredicates;
-    List<Predicate> negativePredicates;
+    public static final Clause EMPTY = new Clause();
+
+    private List<Predicate> predicates;
+    private List<Predicate> positivePredicates;
+    private List<Predicate> negativePredicates;
 
     public Clause(String clause) {
+        predicates = new LinkedList<>();
         positivePredicates = new LinkedList<>();
         negativePredicates = new LinkedList<>();
 
-        String[] predicates = clause.split(" ");
-        for(String temp : predicates) {
+        String[] given_predicates = clause.split(" ");
+        for(String temp : given_predicates) {
             Predicate predicate = new Predicate(temp);
-            if(predicate.isNegated) {
+            predicates.add(predicate);
+            if(predicate.isNegated()) {
                 negativePredicates.add(predicate);
             }
             else {
                 positivePredicates.add(predicate);
             }
         }
+    }
+
+    public Clause(List<Predicate> new_pred) {
+        predicates = new LinkedList<>(new_pred);
+        positivePredicates = new LinkedList<>();
+        negativePredicates = new LinkedList<>();
+
+        for(Predicate pred : new_pred) {
+            if(pred.isNegated()) {
+                negativePredicates.add(pred);
+            }
+            else {
+                positivePredicates.add(pred);
+            }
+        }
+    }
+
+    public Clause() {
+        this(new LinkedList<Predicate>());
+    }
+
+    public boolean isTautology(KnowledgeBase kb) {
+        if(predicates.size() == 2) {
+            for(int i = 0; i < predicates.size() - 1; i++) {
+                Predicate pred_i = predicates.get(i);
+                for(int j = i + 1; j < predicates.size(); j++) {
+                    Predicate pred_j = predicates.get(j);
+                    if(pred_i.equals(pred_j, kb) &&
+                            ((pred_i.isNegated() && !pred_j.isNegated()) ||
+                                    (!pred_i.isNegated() && pred_j.isNegated()))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public List<Predicate> getPredicates() {
+        return predicates;
+    }
+
+    public List<Predicate> getPositivePredicates() {
+        return positivePredicates;
+    }
+
+    public List<Predicate> getNegativePredicates() {
+        return negativePredicates;
+    }
+
+    public boolean equals(Object that, KnowledgeBase kb) {
+        if(this == that) return true;
+        if(that == null) return false;
+        if (this.getClass() != that.getClass()) return false;
+
+        Clause thatClause = (Clause) that;
+        if(!this.isEmpty() && thatClause.isEmpty())
+            return false;
+        for (Predicate thisPred : predicates) {
+            for (Predicate thatPred : thatClause.getPredicates()) {
+                if (!(thatPred.equals(thisPred, kb) && (thisPred.isNegated() == thatPred.isNegated()))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isEmpty() {
+        return predicates.isEmpty() && negativePredicates.isEmpty() && positivePredicates.isEmpty();
     }
 
     public String toString() {

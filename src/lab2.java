@@ -57,10 +57,13 @@ public class lab2 {
             kb.addFunctions(functionsList);
             kb.addClauses(clauses);
 
-
             if(enableDebug) {
                 debug(kb.toString());
             }
+
+            Resolution res = new Resolution(kb);
+            System.out.println(res.isSatisfiable());
+
 
         } catch (FileNotFoundException e) {
             System.err.println("File not Found!\n" + e.getMessage());

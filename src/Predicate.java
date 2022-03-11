@@ -21,12 +21,17 @@ public class Predicate {
         terms = new LinkedList<>();
 
         int termStart = pred.indexOf("(");
-        predicate = pred.substring(0, termStart);
+        if(termStart != -1) {
+            predicate = pred.substring(0, termStart);
 
-        String[] tempTerms = (pred.substring(termStart + 1, pred.length() - 1)).split(",");
-        for(String temp: tempTerms) {
-            Term tempTerm = new Term(temp);
-            terms.add(tempTerm);
+            String[] tempTerms = (pred.substring(termStart + 1, pred.length() - 1)).split(",");
+            for (String temp : tempTerms) {
+                Term tempTerm = new Term(temp);
+                terms.add(tempTerm);
+            }
+        }
+        else {
+            predicate = pred;
         }
     }
 
@@ -92,7 +97,7 @@ public class Predicate {
                     (term1.isConstant(kb) && term2.isFunction(kb)) ||
                     (term1.isFunction(kb) && term2.isConstant(kb)) ||
                     (term1.isVariable(kb) && term2.isFunction(kb) && term2.getFuncTerms().contains(term1)) ||
-                    (!term1.equalsFunction(term2))) {
+                    (term1.isFunction(kb) && term2.isFunction(kb) && !term1.equalsFunction(term2))) {
                 return false;
             }
         }

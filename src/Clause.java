@@ -95,7 +95,8 @@ public class Clause {
         if((!this.isEmpty() && thatClause.isEmpty()) || (this.isEmpty() && !thatClause.isEmpty())) {
             return false;
         }
-        return predicates.containsAll(thatClause.getPredicates());
+
+        return predicates.size() == thatClause.getPredicates().size() && predicates.containsAll(thatClause.getPredicates());
     }
 
     public boolean isEmpty() {

@@ -49,7 +49,7 @@ public class Predicate {
 
     @Override
     public int hashCode() {
-        return Objects.hash(isNegated, predicate, terms);
+        return Objects.hash(predicate, terms);
     }
 
     @Override
@@ -60,8 +60,7 @@ public class Predicate {
 
         Predicate thatPred = (Predicate) that;
         boolean flag = predicate.equals(thatPred.getPredicate())
-                && terms.size() == thatPred.getTerms().size()
-                && this.isNegated() == thatPred.isNegated();
+                && terms.size() == thatPred.getTerms().size();
 
         if(!flag)
             return false;

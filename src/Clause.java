@@ -59,7 +59,7 @@ public class Clause {
                 Predicate pred_i = predicates.get(i);
                 for(int j = i + 1; j < predicates.size(); j++) {
                     Predicate pred_j = predicates.get(j);
-                    if(!pred_i.equals(pred_j) && pred_i.BothCreateTautology(pred_j)) {
+                    if(pred_i.BothCreateTautology(pred_j)) {
                         return true;
                     }
                 }

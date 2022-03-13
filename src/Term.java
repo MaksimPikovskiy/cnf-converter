@@ -69,7 +69,9 @@ public class Term {
     }
 
     public boolean equalsFunction(Object that) {
-        boolean flag = equals(that);
+        boolean flag = this.equals(that);
+
+        //System.out.println("this that equal " + flag);
 
         if(flag && funcTerms != null) {
             Term thatTerm = (Term) that;

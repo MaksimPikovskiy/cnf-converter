@@ -49,7 +49,7 @@ public class Predicate {
 
     @Override
     public int hashCode() {
-        return Objects.hash(predicate, terms);
+        return Objects.hash(predicate, terms.size());
     }
 
     @Override
@@ -73,7 +73,7 @@ public class Predicate {
                     (term1.isConstant(kb) && term2.isFunction(kb)) ||
                     (term1.isFunction(kb) && term2.isConstant(kb)) ||
                     (term1.isVariable(kb) && term2.isFunction(kb) && term2.getFuncTerms().contains(term1)) ||
-                    (!term1.equalsFunction(term2))) {
+                    (term1.isFunction(kb) && term2.isFunction(kb) && !term1.equalsFunction(term2))) {
                 return false;
             }
         }

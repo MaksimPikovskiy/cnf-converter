@@ -48,10 +48,6 @@ public class Resolution {
 
         Set<Predicate> complementarySet = new LinkedHashSet<>(clause_i.getPositivePredicates());
         Set<Predicate> tempSet = new LinkedHashSet<>(clause_j.getNegativePredicates());
-
-        System.out.println("positive preds: " + complementarySet);
-        System.out.println("negativae preds: " + tempSet);
-
         if(complementarySet != tempSet) {
             complementarySet.retainAll(tempSet);
         }
@@ -62,35 +58,22 @@ public class Resolution {
             replacements.putAll(getReplacements(clause_j.getNegativePredicates(), clause_i.getPositivePredicates()));
         }
 
-        System.out.println("Complementary Set: " + complementarySet);
-        System.out.println("\t\tReplacements: " + replacements);
-        System.out.println("\t\tReplacements keySet: " + replacements.keySet());
-
         for(Predicate complement : complementarySet) {
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println("complement: " + complement);
             List<Predicate> resolventLiterals = new LinkedList<>();
 
             for(Predicate ciPred : clause_i.getPredicates()) {
-                System.out.println("ciPred: " + ciPred);
                 if(ciPred.isNegated() || !ciPred.equals(complement)) {
                     replace(replacements, resolventLiterals, ciPred);
                 }
             }
 
             for(Predicate cjPred : clause_j.getPredicates()) {
-                System.out.println("cjPred: " + cjPred);
                 if(!cjPred.isNegated() || !cjPred.equals(complement)) {
                     replace(replacements, resolventLiterals, cjPred);
-                    //resolventLiterals.add(cjPred);
                 }
             }
 
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
             Clause resolvent = new Clause(resolventLiterals, kb);
-            System.out.println("Add Resolvent: " + resolvent);
-            System.out.println("Add Resolvents: " + resolvents);
             if(!resolvent.isTautology()) {
                 resolvents.add(resolvent);
             }
@@ -110,7 +93,6 @@ public class Resolution {
                     replaceTerms.set(index, replacements.get(t1));
                 }
             }
-            System.out.println("new pred: " + new Predicate(pred.getPredicate(), replaceTerms, pred.isNegated(), kb));
             resolventLiterals.add(new Predicate(pred.getPredicate(), replaceTerms, pred.isNegated(), kb));
         } else {
             resolventLiterals.add(pred);
@@ -140,7 +122,7 @@ public class Resolution {
 
     }
 
-    private  boolean containsAny(List<Term> list1, List<Term> list2) {
+    private boolean containsAny(List<Term> list1, List<Term> list2) {
         for(Term term1 : list1)
             for(Term term2 : list2)
                 if(term1.equals(term2))

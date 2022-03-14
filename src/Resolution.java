@@ -48,32 +48,104 @@ public class Resolution {
 
         Set<Predicate> complementarySet = new LinkedHashSet<>(clause_i.getPositivePredicates());
         Set<Predicate> tempSet = new LinkedHashSet<>(clause_j.getNegativePredicates());
+
+        System.out.println("positive preds: " + complementarySet);
+        System.out.println("negativae preds: " + tempSet);
+
         if(complementarySet != tempSet) {
             complementarySet.retainAll(tempSet);
         }
 
+        Map<Term, Term> replacements = new HashMap<>();
+        if(!complementarySet.isEmpty()) {
+            replacements.putAll(getReplacements(clause_i.getPositivePredicates(), clause_j.getNegativePredicates()));
+            replacements.putAll(getReplacements(clause_j.getNegativePredicates(), clause_i.getPositivePredicates()));
+        }
+
+        System.out.println("Complementary Set: " + complementarySet);
+        System.out.println("\t\tReplacements: " + replacements);
+        System.out.println("\t\tReplacements keySet: " + replacements.keySet());
+
         for(Predicate complement : complementarySet) {
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("complement: " + complement);
             List<Predicate> resolventLiterals = new LinkedList<>();
 
             for(Predicate ciPred : clause_i.getPredicates()) {
+                System.out.println("ciPred: " + ciPred);
                 if(ciPred.isNegated() || !ciPred.equals(complement)) {
-                    resolventLiterals.add(ciPred);
+                    replace(replacements, resolventLiterals, ciPred);
                 }
             }
 
             for(Predicate cjPred : clause_j.getPredicates()) {
+                System.out.println("cjPred: " + cjPred);
                 if(!cjPred.isNegated() || !cjPred.equals(complement)) {
-                    resolventLiterals.add(cjPred);
+                    replace(replacements, resolventLiterals, cjPred);
+                    //resolventLiterals.add(cjPred);
                 }
             }
 
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
             Clause resolvent = new Clause(resolventLiterals, kb);
+            System.out.println("Add Resolvent: " + resolvent);
+            System.out.println("Add Resolvents: " + resolvents);
             if(!resolvent.isTautology()) {
                 resolvents.add(resolvent);
             }
         }
 
         return resolvents;
+    }
+
+    private void replace(Map<Term, Term> replacements, List<Predicate> resolventLiterals, Predicate pred) {
+        if(!replacements.isEmpty() &&
+                containsAny(pred.getTerms(), new LinkedList<>(replacements.keySet()))) {
+            List<Term> replaceTerms = pred.getTerms();
+            int index;
+            for(Term t1 : replacements.keySet()) {
+                index = replaceTerms.indexOf(t1);
+                if (index != -1) {
+                    replaceTerms.set(index, replacements.get(t1));
+                }
+            }
+            System.out.println("new pred: " + new Predicate(pred.getPredicate(), replaceTerms, pred.isNegated(), kb));
+            resolventLiterals.add(new Predicate(pred.getPredicate(), replaceTerms, pred.isNegated(), kb));
+        } else {
+            resolventLiterals.add(pred);
+        }
+    }
+
+    private Map<Term, Term> getReplacements(List<Predicate> list1, List<Predicate> list2) {
+        Map<Term, Term> replacements = new HashMap<>(); // (toReplace, replacement)
+
+
+        for(Predicate pred1 : list1) {
+            for(Predicate pred2 : list2) {
+                if (pred1.equals(pred2)) {
+                    List<Term> terms = pred1.getTerms();
+                    for (int i = 0; i < terms.size(); i++) {
+                        Term term1 = terms.get(i);
+                        Term term2 = pred2.getTerms().get(i);
+                        if ((term1.isConstant(kb) || term1.isFunction(kb)) && term2.isVariable(kb)) {
+                            replacements.put(term2, term1);
+                        }
+                    }
+                }
+            }
+        }
+
+        return replacements;
+
+    }
+
+    private  boolean containsAny(List<Term> list1, List<Term> list2) {
+        for(Term term1 : list1)
+            for(Term term2 : list2)
+                if(term1.equals(term2))
+                    return true;
+        return false;
     }
 
     private void discardTautologies(Set<Clause> clauses) {

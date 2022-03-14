@@ -35,6 +35,13 @@ public class Predicate {
         }
     }
 
+    public Predicate(String predicate, List<Term> terms, boolean isNegated, KnowledgeBase kb) {
+        this.predicate = predicate;
+        this.terms = terms;
+        this.isNegated = isNegated;
+        this.kb = kb;
+    }
+
     public String getPredicate() {
         return predicate;
     }

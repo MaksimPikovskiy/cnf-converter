@@ -59,6 +59,10 @@ public class KnowledgeBase {
         return clauses;
     }
 
+    public List<String> getConstants() {
+        return constants;
+    }
+
     @Override
     public String toString() {
         return "Knowledge Base:" +

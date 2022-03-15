@@ -1,12 +1,31 @@
 import java.util.*;
 
+/**
+ * Resolution is class which uses Resolution algorithm to find whether a {@linkplain KnowledgeBase} is
+ * satisfiable.
+ *
+ * @author <a href='mailto:mp8671@rit.edu'>Maksim Pikovskiy</a>
+ */
 public class Resolution {
     KnowledgeBase kb;
 
+    /**
+     * Constructs a {@linkplain Resolution} with provided {@linkplain KnowledgeBase}.
+     *
+     * @param newKB {@link KnowledgeBase}
+     */
     public Resolution(KnowledgeBase newKB) {
         kb = newKB;
     }
 
+    /**
+     * Checks whether the provided {@linkplain KnowledgeBase} is satisfiable.
+     * It uses {@linkplain Set Sets} to make sure there are no duplicate
+     * {@linkplain Clause Clauses}.
+     *
+     * @return "no" if it isn't satisfiable (contains {@link Clause Empty Clause}
+     *         "yes" if it is satisfiable
+     */
     public String isSatisfiable() {
         Set<Clause> clauses = new LinkedHashSet<>(kb.getClauses());
         Set<Clause> newClauses = new LinkedHashSet<>();
@@ -43,6 +62,15 @@ public class Resolution {
         }
     }
 
+    /**
+     * Checks whether two {@linkplain Clause Clauses} have same {@linkplain Predicate Predicates}.
+     * It iterates over same {@linkplain Predicate Predicates} and builds new {@linkplain Clause Resolvent Clauses}
+     * to be added to Resolution ongoing clauses {@linkplain List}.
+     *
+     * @param clause_i first {@link Clause} to be checked against another
+     * @param clause_j second {@link Clause} to be checked against another
+     * @return {@link Set} with unique {@link Clause Clauses} (no duplicates)
+     */
     private Set<Clause> resolve(Clause clause_i, Clause clause_j) {
         Set<Clause> resolvents = new LinkedHashSet<>();
 
@@ -59,21 +87,21 @@ public class Resolution {
         }
 
         for(Predicate complement : complementarySet) {
-            List<Predicate> resolventLiterals = new LinkedList<>();
+            List<Predicate> resolventPredicates = new LinkedList<>();
 
             for(Predicate ciPred : clause_i.getPredicates()) {
                 if(ciPred.isNegated() || !ciPred.equals(complement)) {
-                    replace(replacements, resolventLiterals, ciPred);
+                    replace(replacements, resolventPredicates, ciPred);
                 }
             }
 
             for(Predicate cjPred : clause_j.getPredicates()) {
                 if(!cjPred.isNegated() || !cjPred.equals(complement)) {
-                    replace(replacements, resolventLiterals, cjPred);
+                    replace(replacements, resolventPredicates, cjPred);
                 }
             }
 
-            Clause resolvent = new Clause(resolventLiterals, kb);
+            Clause resolvent = new Clause(resolventPredicates, kb);
             if(!resolvent.isTautology()) {
                 resolvents.add(resolvent);
             }
@@ -82,7 +110,16 @@ public class Resolution {
         return resolvents;
     }
 
-    private void replace(Map<Term, Term> replacements, List<Predicate> resolventLiterals, Predicate pred) {
+    /**
+     * Replaces the {@linkplain Term Terms} of the {@linkplain Predicate}
+     * Variable to Constant/Function replacements of {@linkplain Term Terms}.
+     *
+     * @param replacements the {@link Map} of replacements (Variable=Constant)
+     * @param resolventPredicates the {@link List} of {@link Predicate Predicates} for new
+     *                            {@link Clause} to contain
+     * @param pred {@link Predicate} to have its {@link Term Terms} replaced
+     */
+    private void replace(Map<Term, Term> replacements, List<Predicate> resolventPredicates, Predicate pred) {
         if(!replacements.isEmpty() &&
                 containsAny(pred.getTerms(), new LinkedList<>(replacements.keySet()))) {
             List<Term> replaceTerms = pred.getTerms();
@@ -93,15 +130,22 @@ public class Resolution {
                     replaceTerms.set(index, replacements.get(t1));
                 }
             }
-            resolventLiterals.add(new Predicate(pred.getPredicate(), replaceTerms, pred.isNegated(), kb));
+            resolventPredicates.add(new Predicate(pred.getPredicate(), replaceTerms, pred.isNegated(), kb));
         } else {
-            resolventLiterals.add(pred);
+            resolventPredicates.add(pred);
         }
     }
 
+    /**
+     * Retrives a {@linkplain Map} of {@linkplain Term} to {@linkplain Term} replacement.
+     * It will be used to replace Variables with Constants or Functions.
+     *
+     * @param list1 first {@link List} of {@link Predicate Predicates} to get Constants/Functions
+     * @param list2 second {@link List} of {@link Predicate Predicates} to get Variables
+     * @return {@linkplain Map} of {@linkplain Term Variable Term} to {@linkplain Term Constant/Function Term} replacement
+     */
     private Map<Term, Term> getReplacements(List<Predicate> list1, List<Predicate> list2) {
         Map<Term, Term> replacements = new HashMap<>(); // (toReplace, replacement)
-
 
         for(Predicate pred1 : list1) {
             for(Predicate pred2 : list2) {
@@ -122,6 +166,13 @@ public class Resolution {
 
     }
 
+    /**
+     * Checks whether the one {@linkplain List} contains any {@linkplain Term} of another {@linkplain List}
+     * @param list1 first {@link List} of {@link Term Terms}
+     * @param list2 second {@link List} of {@link Term Terms}
+     * @return true if first {@link List} contains any {@link Term} of second {@link List}
+     *         false, otherwise
+     */
     private boolean containsAny(List<Term> list1, List<Term> list2) {
         for(Term term1 : list1)
             for(Term term2 : list2)
@@ -130,6 +181,11 @@ public class Resolution {
         return false;
     }
 
+    /**
+     * Removes {@linkplain Clause Clauses} that are tautologies.
+     *
+     * @param clauses {@link Set} of unique {@link Clause Clauses} to remove tautologies from
+     */
     private void discardTautologies(Set<Clause> clauses) {
         clauses.removeIf(Clause::isTautology);
     }

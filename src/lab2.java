@@ -4,20 +4,59 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * This is the main class for initiating Knowledge Base and Resolution.
+ *
+ * It checks whether correct number of arguments was passed and if the files
+ * exist and are accessible.
+ *
+ * Using the provided argument, it reads from the provided file of CNF
+ * representation of Knowledge Base. It reads line by line, putting the
+ * data into {@linkplain List lists}. After putting the data, it creates
+ * {@linkplain KnowledgeBase} with the data provided.
+ *
+ * After creating {@linkplain KnowledgeBase}, it creates a {@linkplain Resolution}
+ * and passes created {@linkplain KnowledgeBase}. It then initiates {@linkplain Resolution}
+ * and checks whether created {@linkplain KnowledgeBase} is satisfiable.
+ *
+ * This class has a debug mode, enabled/disabled with boolean enableDebug in
+ * main method. The debug mode prints the provided data as it was given and
+ * then prints created {@linkplain KnowledgeBase}.
+ *
+ * @author <a href='mailto:mp8671@rit.edu'>Maksim Pikovskiy</a>
+ */
 public class lab2 {
 
+    /**
+     * Prints the string values provided for debugging.
+     *
+     * @param str the string to be printed.
+     */
     private static void debug(String str) {
         System.out.println(str + "\n\n");
     }
 
+    /**
+     * Prints the message on how to use the program.
+     * Only prints when incorrect number of arguments are given.
+     */
     private static void usage() {
         System.err.println("Program should accept 1 argument, cnf-file." +
                 "\n Example: $ java lab2.java testcases/functions/f1.cnf");
     }
 
+    /**
+     * Main body of the program.
+     *
+     * Retrieves all the required information needed to create a {@linkplain KnowledgeBase}.
+     * Then initiates {@linkplain Resolution} with created {@linkplain KnowledgeBase}.
+     *
+     * @param args required 1 argument for the {@link KnowledgeBase}.
+     */
     public static void main(String[] args) {
 
-        boolean enableDebug = true;
+        // allows printing how the data from cnf file and then how KB took that data.
+        boolean enableDebug = false;
 
         if(args.length != 1) {
             System.err.println("Error: Incorrect number of arguments");

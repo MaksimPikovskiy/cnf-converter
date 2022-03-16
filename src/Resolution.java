@@ -78,34 +78,34 @@ public class Resolution {
         Set<Clause> resolvents = new LinkedHashSet<>();
 
         // Get the Set of Predicates that are the same, excluding their negation (!friend(Kim) and friend(Kim))
-        Set<Predicate> complementarySet = new LinkedHashSet<>(clause_i.getPositivePredicates());
+        Set<Predicate> intersectionSet = new LinkedHashSet<>(clause_i.getPositivePredicates());
         Set<Predicate> tempSet = new LinkedHashSet<>(clause_j.getNegativePredicates());
-        if(complementarySet != tempSet) {
-            complementarySet.retainAll(tempSet);
+        if(intersectionSet != tempSet) {
+            intersectionSet.retainAll(tempSet);
         }
         // Get the Mapping of replacement (e.g. x1 => Kim, x3 => George, etc.)
         Map<Term, Term> replacements = new HashMap<>();
-        if(!complementarySet.isEmpty()) {
+        if(!intersectionSet.isEmpty()) {
             replacements.putAll(getReplacements(clause_i.getPositivePredicates(), clause_j.getNegativePredicates()));
             replacements.putAll(getReplacements(clause_j.getNegativePredicates(), clause_i.getPositivePredicates()));
         }
 
-        // Go through predicates, adding predicates that are not in the complementary set
-        for(Predicate complement : complementarySet) {
+        // Go through predicates, adding predicates that are not in the intersection set
+        for(Predicate intersect : intersectionSet) {
             List<Predicate> resolventPredicates = new LinkedList<>();
 
-            // If the clause is negated or is not equal to complement, add it to resolventPredicates
+            // If the clause is negated or is not equal to intersect, add it to resolventPredicates
             // replace the terms inside Predicate if it is required (x1 => Kim / Variable => Constant/Function)
             for(Predicate ciPred : clause_i.getPredicates()) {
-                if(ciPred.isNegated() || !ciPred.equals(complement)) {
+                if(ciPred.isNegated() || !ciPred.equals(intersect)) {
                     replace(replacements, resolventPredicates, ciPred);
                 }
             }
 
-            // If the clause is negated or is not equal to complement, add it to resolventPredicates
+            // If the clause is negated or is not equal to intersect, add it to resolventPredicates
             // replace the terms inside Predicate if it is required (x1 => Kim / Variable => Constant/Function)
             for(Predicate cjPred : clause_j.getPredicates()) {
-                if(!cjPred.isNegated() || !cjPred.equals(complement)) {
+                if(!cjPred.isNegated() || !cjPred.equals(intersect)) {
                     replace(replacements, resolventPredicates, cjPred);
                 }
             }
@@ -166,7 +166,7 @@ public class Resolution {
     private Map<Term, Term> getReplacements(List<Predicate> list1, List<Predicate> list2) {
         Map<Term, Term> replacements = new HashMap<>(); // (toReplace, replacement)
 
-        // Go through two lists, finding equal clauses (complements),
+        // Go through two lists, finding equal clauses (intersects),
         // create a mapping where first term is variable to be replaced and
         // second term is a constant or function to be put into the variable place.
         for(Predicate pred1 : list1) {

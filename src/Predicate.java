@@ -110,6 +110,10 @@ public class Predicate {
     /**
      * Checks whether two {@linkplain Predicate Predicates} are equal.
      *
+     * The terms for loop in this method follows the logic from the website
+     * with unification table:
+     *      https://www-users.cse.umn.edu/~gini/4511/unification.html
+     *
      * @param that a {@link Predicate} to compare this {@link Predicate} to
      * @return true if two predicates are the same.
      *         false, otherwise

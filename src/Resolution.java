@@ -30,6 +30,7 @@ public class Resolution {
         Set<Clause> clauses = new LinkedHashSet<>(kb.getClauses());
         Set<Clause> newClauses = new LinkedHashSet<>();
 
+        // Remove Tautologies if they are present in KB
         discardTautologies(clauses);
 
         while(true) {
@@ -44,6 +45,7 @@ public class Resolution {
                     resolvents.addAll(resolve(clause_i, clause_j));
                     resolvents.addAll(resolve(clause_j, clause_i));
 
+                    // If any resolvent Clause is empty, KB is not satisfiable
                     for(Clause resolvent : resolvents) {
                         if(resolvent.equals(Clause.EMPTY)) {
                             return "no";
@@ -54,6 +56,7 @@ public class Resolution {
                 }
             }
 
+            // If all the new clauses are contained in clauses, KB is satisfiable
             if (clauses.containsAll(newClauses)) {
                 return "yes";
             }
@@ -74,33 +77,40 @@ public class Resolution {
     private Set<Clause> resolve(Clause clause_i, Clause clause_j) {
         Set<Clause> resolvents = new LinkedHashSet<>();
 
+        // Get the Set of Predicates that are the same, excluding their negation (!friend(Kim) and friend(Kim))
         Set<Predicate> complementarySet = new LinkedHashSet<>(clause_i.getPositivePredicates());
         Set<Predicate> tempSet = new LinkedHashSet<>(clause_j.getNegativePredicates());
         if(complementarySet != tempSet) {
             complementarySet.retainAll(tempSet);
         }
-
+        // Get the Mapping of replacement (e.g. x1 => Kim, x3 => George, etc.)
         Map<Term, Term> replacements = new HashMap<>();
         if(!complementarySet.isEmpty()) {
             replacements.putAll(getReplacements(clause_i.getPositivePredicates(), clause_j.getNegativePredicates()));
             replacements.putAll(getReplacements(clause_j.getNegativePredicates(), clause_i.getPositivePredicates()));
         }
 
+        // Go through predicates, adding predicates that are not in the complementary set
         for(Predicate complement : complementarySet) {
             List<Predicate> resolventPredicates = new LinkedList<>();
 
+            // If the clause is negated or is not equal to complement, add it to resolventPredicates
+            // replace the terms inside Predicate if it is required (x1 => Kim / Variable => Constant/Function)
             for(Predicate ciPred : clause_i.getPredicates()) {
                 if(ciPred.isNegated() || !ciPred.equals(complement)) {
                     replace(replacements, resolventPredicates, ciPred);
                 }
             }
 
+            // If the clause is negated or is not equal to complement, add it to resolventPredicates
+            // replace the terms inside Predicate if it is required (x1 => Kim / Variable => Constant/Function)
             for(Predicate cjPred : clause_j.getPredicates()) {
                 if(!cjPred.isNegated() || !cjPred.equals(complement)) {
                     replace(replacements, resolventPredicates, cjPred);
                 }
             }
 
+            // Create resolvent Clause and add it to resolvents if it is not a Tautology.
             Clause resolvent = new Clause(resolventPredicates, kb);
             if(!resolvent.isTautology()) {
                 resolvents.add(resolvent);
@@ -120,6 +130,9 @@ public class Resolution {
      * @param pred {@link Predicate} to have its {@link Term Terms} replaced
      */
     private void replace(Map<Term, Term> replacements, List<Predicate> resolventPredicates, Predicate pred) {
+        // if there are replacements, Predicate contains terms in replacement map,
+        // replace that Variable Term with the Constant/Function Term
+        // otherwise, add the Predicate with no modification
         if(!replacements.isEmpty() &&
                 containsAny(pred.getTerms(), new LinkedList<>(replacements.keySet()))) {
             List<Term> replaceTerms = pred.getTerms();
@@ -140,6 +153,12 @@ public class Resolution {
      * Retrives a {@linkplain Map} of {@linkplain Term} to {@linkplain Term} replacement.
      * It will be used to replace Variables with Constants or Functions.
      *
+     * This method replaces the role of unify in this {@linkplain Resolution} algorithm.
+     * It concerns variable to constant/function replacement, as two different variables can be
+     * freely replaced with each other.
+     * This logic is based on the website representing unification:
+     *         https://www-users.cse.umn.edu/~gini/4511/unification.html
+     *
      * @param list1 first {@link List} of {@link Predicate Predicates} to get Constants/Functions
      * @param list2 second {@link List} of {@link Predicate Predicates} to get Variables
      * @return {@linkplain Map} of {@linkplain Term Variable Term} to {@linkplain Term Constant/Function Term} replacement
@@ -147,6 +166,9 @@ public class Resolution {
     private Map<Term, Term> getReplacements(List<Predicate> list1, List<Predicate> list2) {
         Map<Term, Term> replacements = new HashMap<>(); // (toReplace, replacement)
 
+        // Go through two lists, finding equal clauses (complements),
+        // create a mapping where first term is variable to be replaced and
+        // second term is a constant or function to be put into the variable place.
         for(Predicate pred1 : list1) {
             for(Predicate pred2 : list2) {
                 if (pred1.equals(pred2)) {
